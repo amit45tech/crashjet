@@ -8,14 +8,15 @@ import Control1 from './components/control1/Control1';
 import Control2 from './components/control2/Control2';
 import Message from './components/message/Message';
 import Rules from './components/rules/Rules';
-import { useSelector, useDispatch} from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useState, useRef } from 'react';
 import Menu from './components/menu/Menu';
 import { setShowRules } from './components/rules/rulesSlice';
 import { setBalance } from './components/header/headerSlice';
 import bgSfx from './assets/bgmusic.mp3';
 import useSound from 'use-sound';
 import Auto from './components/auto/Auto';
+
 
 
 
@@ -29,6 +30,8 @@ function App() {
   const sound = useSelector((state) => state.menu.sound);
   const music = useSelector((state) => state.menu.music);
   const showAuto1 = useSelector((state) => state.control1.showAuto1);
+  const round_Status = useSelector((state) => state.display.rStatus);
+
 
   const dispatch = useDispatch();
   const soundUrl = '/assets/bgmusic.mp3';
@@ -43,9 +46,10 @@ function App() {
   };
 
   getBalanceFromDB(uid);
-   
- 
 
+
+
+ 
 
   // socket.on("Greater", (payload) => {
   //   setInstructionClass("instruction4");
@@ -54,7 +58,7 @@ function App() {
   // socket.on("Result", (payload) => {
   //   setResult(payload);
   // });
- 
+
   const [playbackRate, setPlaybackRate] = useState(1);
 
   const [play, { stop }] = useSound(bgSfx, {
@@ -64,23 +68,24 @@ function App() {
 
   const playMusic = () => {
     play();
- 
+
   };
 
-  
-  // playMusic();
-  
-    if(music === "true"){ stop();
-      playMusic(); }
-    else{ stop() }
 
-  
- 
+  // playMusic();
+
+  if (music === "true") {
+    stop();
+    playMusic();
+  }
+  else { stop() }
+
+
+
   return (
     <div className="App" >
-            
-     
-      <div className={(showRules === "true") ? `rules-box` : `rules-box2`} onClick={()=> dispatch(setShowRules("false"))}>
+
+      <div className={(showRules === "true") ? `rules-box` : `rules-box2`} onClick={() => dispatch(setShowRules("false"))}>
         <Rules />
       </div>
       <Header />
@@ -88,10 +93,10 @@ function App() {
         <Menu />
       </div>
       <div className="message-box">
-        <Message /> 
+        <Message />
       </div>
 
-      <div className={(showAuto1 ==="true")?`auto-box`:`auto-box2`}>
+      <div className={(showAuto1 === "true") ? `auto-box` : `auto-box2`}>
         <Auto />
       </div>
       <div className="App-features">

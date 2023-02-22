@@ -18,7 +18,7 @@ const io = require('socket.io')(server, {
     }
 });
 
-let port = process.env.PORT ;
+let port = process.env.PORT;
 
 app.use(bodyParser.json());
 
@@ -29,7 +29,7 @@ app.all("*", (req, res) => res.send("This doesn't exist!"));
 
 
 
-mongoose.connect( process.env.MONGODB_URL , {
+mongoose.connect(process.env.MONGODB_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => {
@@ -39,7 +39,7 @@ mongoose.connect( process.env.MONGODB_URL , {
 
 let check = true;
 let wait = true;
-let rId, roundStat, betStat, crashresult="", GameID = process.env.GAMEID, TableID = process.env.TABLEID, GameName =process.env.GAMENAME, TableName = process.env.TABLENAME;
+let rId, roundStat, betStat, crashresult = "", GameID = process.env.GAMEID, TableID = process.env.TABLEID, GameName = process.env.GAMENAME, TableName = process.env.TABLENAME;
 
 
 //Generate random number between 100 to 5000
@@ -57,11 +57,11 @@ async function CreateNewRound() {
     rId = roundid;
     roundStat = "ROUND_START";
     betStat = "FALSE";
-    crashresult="";
+    crashresult = "";
 
     io.emit('RoundID', roundid);
 
-    const event = { gameId: GameID, gameName: GameName, tableId: TableID, tableName: TableName, roundID: rId, roundStatus: roundStat, betStatus: betStat, outcome: crashresult};
+    const event = { "result": { "gameId": GameID, "gameName": GameName, "tableId": TableID, "tableName": TableName, "roundID": rId, "roundStatus": roundStat, "betStatus": betStat, "result": crashresult } };
 
     // call the `produce` function and log an error if it occurs
     produce(event).catch((err) => {
@@ -147,13 +147,13 @@ async function SaveResultInDB(pResult) {
 //  on game start
 function StartGame() {
 
-    let result = GetRandomInteger(100, 130);
+    let result = GetRandomInteger(100, 4000);
     crashresult = result.toString();
 
     roundStat = "NO_MORE_BETS";
     betStat = "FALSE";
+    const event = { "result": { "gameId": GameID, "gameName": GameName, "tableId": TableID, "tableName": TableName, "roundID": rId, "roundStatus": roundStat, "betStatus": betStat, "result": crashresult } };
 
-    const event = { gameId: "CRASHJET101", gameName: "CrashJet", tableId: "CRASHJET101", tableName: "CRASHJET101", roundID: rId, roundStatus: roundStat, betStatus: betStat, outcome: crashresult};
 
     // call the `produce` function and log an error if it occurs
     produce(event).catch((err) => {
@@ -181,9 +181,9 @@ function StartGame() {
             clearInterval(interval);
             roundStat = "ROUND_END";
             betStat = "FALSE";
-        
-            const event = { gameId: "CRASHJET101", gameName: "CrashJet", tableId: "CRASHJET101", tableName: "CRASHJET101", roundID: rId, roundStatus: roundStat, betStatus: betStat, outcome: crashresult};
-        
+            const event = { "result": { "gameId": GameID, "gameName": GameName, "tableId": TableID, "tableName": TableName, "roundID": rId, "roundStatus": roundStat, "betStatus": betStat, "result": crashresult } };
+
+
             // call the `produce` function and log an error if it occurs
             produce(event).catch((err) => {
                 console.error("error in producer: ", err)
@@ -191,11 +191,14 @@ function StartGame() {
 
             io.emit("Crash", "Crashed!");
             console.log("plane crashed");
-            // io.emit('finalResult', m);
             io.emit('Result', m);
             updateCrashedAt(rId, m);
             SaveResultInDB(m);
-            check = true;
+
+            setTimeout(() => {
+                check = true;
+            }, 2000);
+
 
         } else {
             io.emit('Result', m);
@@ -211,12 +214,12 @@ function WaitingForNextRound() {
     wait = true;  //TODO  emit wait=true
     io.emit("Wait", wait);
 
-   
+
     roundStat = "ROUND_START";
     betStat = "TRUE";
-    crashresult="";
+    crashresult = "";
+    const event = { "result": { "gameId": GameID, "gameName": GameName, "tableId": TableID, "tableName": TableName, "roundID": rId, "roundStatus": roundStat, "betStatus": betStat, "result": crashresult } };
 
-    const event = { gameId: "CRASHJET101", gameName: "CrashJet", tableId: "CRASHJET101", tableName: "CRASHJET101", roundID: rId, roundStatus: roundStat, betStatus: betStat, outcome: crashresult};
 
     // call the `produce` function and log an error if it occurs
     produce(event).catch((err) => {
